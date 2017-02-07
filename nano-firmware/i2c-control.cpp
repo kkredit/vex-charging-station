@@ -11,12 +11,18 @@
 
 /* Function definitions */
 void I2c_Controller::init() {
-  m_isMaster = false;
-  if(m_isMaster) {
+  INIT_INPUT_PULLUP(PIN_ADDR_0);
+  INIT_INPUT_PULLUP(PIN_ADDR_1);
+  INIT_INPUT_PULLUP(PIN_ADDR_2);
+  m_address = (LOW == digitalRead(PIN_ADDR_0))
+              + 2 * (LOW == digitalRead(PIN_ADDR_1))
+              + 4 * (LOW == digitalRead(PIN_ADDR_2));
+
+  if(0 == m_address) {
     Wire.begin();
   }
   else {
-    Wire.begin(1);
+    Wire.begin((int)m_address);
   }
 
   memset(&m_latestMessage, 0, sizeof(m_latestMessage));

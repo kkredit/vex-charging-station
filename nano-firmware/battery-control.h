@@ -12,7 +12,10 @@ class Battery_Controller
 public:
   Battery_Controller() {};
   void init();
-  unsigned short readVoltage();
+  unsigned short readBatteryVoltage();
+  unsigned short readChargerVoltage();
+  void setLoadConnected(bool setval);
+  void setChargerConnected(bool setval);
 
 private:
 };

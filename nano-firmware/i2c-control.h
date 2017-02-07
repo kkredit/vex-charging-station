@@ -26,7 +26,7 @@ public:
   void sendVoltage(unsigned short voltage);
 
 private:
-  bool m_isMaster;
+  unsigned short m_address;
   message_t m_latestMessage;
 };
 

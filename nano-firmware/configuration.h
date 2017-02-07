@@ -9,6 +9,10 @@
 
 #include <Arduino.h>
 
+/* Utility macros */
+#define INIT_INPUT_PULLUP(pin)  pinMode(pin, INPUT);  digitalWrite(pin, HIGH)
+#define INIT_OUTPUT_LOW(pin)    pinMode(pin, OUTPUT); digitalWrite(pin, LOW)
+
 /* Generic defines */
 #define MS_PER_SEC  1000
 
@@ -35,12 +39,12 @@
 #define PIN_VOLTAGE_CHARGER A0
 #define PIN_VOLTAGE_BATTERY A1
 
-#define PIN_LCD_TEXT_0      A2
-#define PIN_LCD_TEXT_1      A3
-#define PIN_LCD_TEXT_2      A4
-#define PIN_LCD_TEXT_3      A5
-#define PIN_LCD_TEXT_4      A6
-#define PIN_LCD_TEXT_5      A7
+#define PIN_LCD_TEXT_RS     A2
+#define PIN_LCD_TEXT_ENABLE A3
+#define PIN_LCD_TEXT_D4     A4
+#define PIN_LCD_TEXT_D5     A5
+#define PIN_LCD_TEXT_D6     A6
+#define PIN_LCD_TEXT_D7     A7
 
 /* Settings */
 #define VOLTAGE_READ_PERIOD     5 // in seconds
@@ -48,6 +52,9 @@
 #define BLINKING_PERIOD         500 // in milliseconds
 #define MIN_RED_THRESHOLD       100 // TODO placeholder; replace with ADC reading representing ~2V
 #define MIN_GRN_THRESHOLD       100 // TODO placeholder; replace with ADC reading representing ~8V
+#define VOLTAGE_READ_DELAY      50  // in ms
+#define LCD_NUM_COLS            16
+#define LCD_NUM_ROWS            2
 
 #endif
 

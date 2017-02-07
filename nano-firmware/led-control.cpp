@@ -10,10 +10,8 @@
 
 /* Function definitions */
 void Led_Controller::init() {
-  pinMode(PIN_LED_RED, OUTPUT);
-  digitalWrite(PIN_LED_RED, false);
-  pinMode(PIN_LED_GRN, OUTPUT);
-  digitalWrite(PIN_LED_GRN, false);
+  INIT_OUTPUT_LOW(PIN_LED_RED);
+  INIT_OUTPUT_LOW(PIN_LED_GRN);
 
   m_isBlinking = false;
   bool m_green = false;

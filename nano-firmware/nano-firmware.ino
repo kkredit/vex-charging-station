@@ -37,11 +37,16 @@ void loop() {
   /* Get new voltage readings every VOLTAGE_READ_PERIOD seconds */
   if(battery_read_ts + VOLTAGE_READ_PERIOD * MS_PER_SEC < millis()) {
     battery_read_ts = millis();
-    my_voltage = battery.readVoltage();
+    battery.setChargerConnected(false);
+    battery.setLoadConnected(true);
+    delay(VOLTAGE_READ_DELAY);
+    my_voltage = battery.readBatteryVoltage();
+    battery.setLoadConnected(false);
+    battery.setChargerConnected(true);
     comms.sendVoltage(my_voltage);
     updated_voltage = true;
   }
-  
+
   /* Handle any messsages */
   if(comms.hasMessage()){
     message_t *msg = comms.getMessage();
@@ -74,5 +79,8 @@ void loop() {
   leds.checkBlink();
 
   /* Update LCD as necessary */
+  if(updated_voltage) {
+    lcd.updateBatteryVoltage(my_voltage);
+  }
 }
 
