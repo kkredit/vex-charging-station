@@ -47,6 +47,6 @@ unsigned short Lcd_Controller::getVoltageUpper() {
 }
 
 unsigned short Lcd_Controller::getVoltageLower() {
-  return (m_voltage % ONE_VOLT) * (100 / ONE_VOLT);
+  return ((m_voltage % ONE_VOLT) * 100u) / ONE_VOLT;
 }
 
