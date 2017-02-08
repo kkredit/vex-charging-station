@@ -48,13 +48,19 @@
 
 /* Settings */
 #define VOLTAGE_READ_PERIOD     5 // in seconds
-#define MIN_BLINKING_THRESHOLD  100 // TODO placeholder; replace with ADC reading representing ~7V
 #define BLINKING_PERIOD         500 // in milliseconds
+#define BLINKING_PERIOD_ERR_ON  50  // in milliseconds
+#define BLINKING_PERIOD_ERR_OFF 1950// in milliseconds
+#define MIN_BLINKING_THRESHOLD  900 // TODO placeholder; replace with ADC reading representing ~7V
 #define MIN_RED_THRESHOLD       100 // TODO placeholder; replace with ADC reading representing ~2V
-#define MIN_GRN_THRESHOLD       100 // TODO placeholder; replace with ADC reading representing ~8V
+#define MIN_GRN_THRESHOLD       800 // TODO placeholder; replace with ADC reading representing ~8V
+#define STOP_CHARGING_THRESHOLD 900 // TODO placeholder; replace with ADC reading representing ~8.5V
+#define BAD_CHARGER_THRESHOLD   700 // TODO placeholder; replace with ADC reading representing ~7V
 #define VOLTAGE_READ_DELAY      50  // in ms
 #define LCD_NUM_COLS            16
 #define LCD_NUM_ROWS            2
+
+#define BAD_VOLTAGE_STR         "BAD CHARGER!"
 
 #endif
 

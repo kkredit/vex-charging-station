@@ -13,62 +13,100 @@ void Led_Controller::init() {
   INIT_OUTPUT_LOW(PIN_LED_RED);
   INIT_OUTPUT_LOW(PIN_LED_GRN);
 
-  m_isBlinking = false;
-  bool m_green = false;
-  bool m_red   = false;
+  m_isBlinking   = false;
+  m_green        = false;
+  m_greenCurrent = false;
+  m_red          = false;
+  m_redCurrent   = false;
+  m_err          = false;
 }
 
 void Led_Controller::turnOff() {
-  digitalWrite(PIN_LED_GRN, false);
-  digitalWrite(PIN_LED_RED, false);
-  bool m_green = false;
-  bool m_red   = false;
+  if(!m_err) {
+    digitalWrite(PIN_LED_GRN, false);
+    digitalWrite(PIN_LED_RED, false);
+    m_isBlinking   = false;
+    m_green        = false;
+    m_greenCurrent = false;
+    m_red          = false;
+    m_redCurrent   = false;
+    m_greenCurrent = false;
+  }
 }
 
 void Led_Controller::setRed() {
-  digitalWrite(PIN_LED_GRN, false);
-  digitalWrite(PIN_LED_RED, true);
-  bool m_green = false;
-  bool m_red   = true;
+  if(!m_err && (m_green != false || m_red != true)) {
+    digitalWrite(PIN_LED_GRN, false);
+    digitalWrite(PIN_LED_RED, true);
+    m_green        = false;
+    m_greenCurrent = false;
+    m_red          = true;
+    m_redCurrent   = true;
+  }
 }
 
 void Led_Controller::setGrn() {
-  digitalWrite(PIN_LED_GRN, true);
+  if(!m_err && (m_green != true || m_red != false)) {
+    digitalWrite(PIN_LED_GRN, true);
+    digitalWrite(PIN_LED_RED, false);
+    m_green        = true;
+    m_greenCurrent = true;
+    m_red          = false;
+    m_redCurrent   = false;
+  }
+}
+
+void Led_Controller::setErr() {
+  m_err = true;
+  m_isBlinking = false;
+  digitalWrite(PIN_LED_GRN, false);
   digitalWrite(PIN_LED_RED, false);
-  bool m_green = true;
-  bool m_red   = false;
+  m_greenCurrent = false;
+  m_redCurrent = false;
+}
+
+void Led_Controller::clearErr() {
+  m_err = false;
 }
 
 void Led_Controller::setBlinking(bool setval) {
-  m_isBlinking = setval;
-}
-
-void Led_Controller::checkBlink() {
-  static bool currently_in_blink = false;
-  static unsigned long blink_ts = 0;
-
-  if(m_isBlinking) {
-    if(blink_ts + BLINKING_PERIOD < millis()) {
-      blink_ts = millis();
-      currently_in_blink = !currently_in_blink;
-      if(currently_in_blink) {
-        digitalWrite(PIN_LED_GRN, false);
-        digitalWrite(PIN_LED_RED, false);
-      }
-      else {
+  if(!m_err) {
+    m_isBlinking = setval;
+    if(!setval) {
+      if(m_green != m_greenCurrent) {
+        m_greenCurrent = m_green;
         digitalWrite(PIN_LED_GRN, m_green);
+      }
+      if(m_red != m_redCurrent) {
+        m_redCurrent = m_red;
         digitalWrite(PIN_LED_RED, m_red);
       }
     }
   }
-  else if(currently_in_blink) {
-    if(m_green) {
-      this->setGrn();
+}
+
+void Led_Controller::checkBlink() {
+  static unsigned long blink_ts = 0;
+  if(m_err) {
+    if(m_redCurrent 
+       && blink_ts + BLINKING_PERIOD_ERR_ON < millis()) {
+      blink_ts = millis();
+      m_redCurrent = false;
+      digitalWrite(PIN_LED_RED, m_redCurrent);
     }
-    else if(m_red) {
-      this->setRed();
+    else if (!m_redCurrent
+             && blink_ts + BLINKING_PERIOD_ERR_OFF < millis()) {
+      blink_ts = millis();
+      m_redCurrent = true;
+      digitalWrite(PIN_LED_RED, m_redCurrent);
     }
-    currently_in_blink = false;
+  }
+  else if(m_isBlinking && blink_ts + BLINKING_PERIOD < millis()) {
+    blink_ts = millis();
+    m_greenCurrent = m_green && !m_greenCurrent;
+    m_redCurrent = m_red && !m_redCurrent;
+    digitalWrite(PIN_LED_GRN, m_greenCurrent);
+    digitalWrite(PIN_LED_RED, m_redCurrent);
   }
 }
 

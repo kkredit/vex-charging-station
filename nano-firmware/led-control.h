@@ -15,13 +15,18 @@ public:
   void turnOff();
   void setRed();
   void setGrn();
+  void setErr();
+  void clearErr();
   void setBlinking(bool setval);
   void checkBlink();
 
 private:
   bool m_isBlinking;
   bool m_green;
+  bool m_greenCurrent;
   bool m_red;
+  bool m_redCurrent;
+  bool m_err;
 };
 
 #endif

@@ -11,6 +11,9 @@
 #include "led-control.h"
 #include "lcd-control.h"
 
+/* Local function declarations */
+void readVoltage(unsigned short &voltage);
+
 /* Global variables */
 Battery_Controller battery;
 I2c_Controller comms;
@@ -30,20 +33,14 @@ void setup() {
 void loop() {
   /* Statics declarations */
   static unsigned long battery_read_ts = 0;
-  unsigned short my_voltage = 0;
-  unsigned short highest_other_voltage = 0;
-  bool updated_voltage = false;
+  static unsigned short my_voltage = 0;
+  static unsigned short highest_other_voltage = 0;
+  static bool updated_voltage = false;
   
   /* Get new voltage readings every VOLTAGE_READ_PERIOD seconds */
   if(battery_read_ts + VOLTAGE_READ_PERIOD * MS_PER_SEC < millis()) {
     battery_read_ts = millis();
-    battery.setChargerConnected(false);
-    battery.setLoadConnected(true);
-    delay(VOLTAGE_READ_DELAY);
-    my_voltage = battery.readBatteryVoltage();
-    battery.setLoadConnected(false);
-    battery.setChargerConnected(true);
-    comms.sendVoltage(my_voltage);
+    readVoltage(my_voltage);
     updated_voltage = true;
   }
 
@@ -82,5 +79,25 @@ void loop() {
   if(updated_voltage) {
     lcd.updateBatteryVoltage(my_voltage);
   }
+}
+
+/* Local function definitions */
+void readVoltage(unsigned short &voltage) {
+  /* Battery */
+  battery.setChargerConnected(false);
+  battery.setLoadConnected(true);
+  delay(VOLTAGE_READ_DELAY);
+  voltage = battery.readBatteryVoltage();
+  battery.setLoadConnected(false);
+  if(BAD_CHARGER_THRESHOLD < battery.readChargerVoltage()) {
+    battery.setChargerConnected(STOP_CHARGING_THRESHOLD > voltage);
+    leds.clearErr();
+  }
+  else {
+    /* Bad charger voltage; leave unconnected */
+    leds.setErr();
+    lcd.printBottomLine(BAD_VOLTAGE_STR);
+  }
+  comms.sendVoltage(voltage);
 }
 

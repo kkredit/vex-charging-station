@@ -30,16 +30,27 @@ void Lcd_Controller::init() {
   lcd->leftToRight();
 
   m_voltage = 0;
+  m_bottomLine = "";
 }
 
 void Lcd_Controller::updateBatteryVoltage(unsigned short voltage) {
   m_voltage = voltage;
+  this->updateScreen();
+}
+
+void Lcd_Controller::printBottomLine(char *str) {
+  m_bottomLine = str;
+  this->updateScreen();
+}
+
+void Lcd_Controller::updateScreen() {
   lcd->clear();
   lcd->print("VOLTAGE: ");
   lcd->print(this->getVoltageUpper());
   lcd->print(".");
   lcd->print(this->getVoltageLower());
-  lcd->print(" V");
+  lcd->print(" V\n");
+  lcd->print(m_bottomLine);
 }
 
 unsigned short Lcd_Controller::getVoltageUpper() {

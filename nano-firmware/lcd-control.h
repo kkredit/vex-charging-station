@@ -15,10 +15,13 @@ public:
   Lcd_Controller() {};
   void init();
   void updateBatteryVoltage(unsigned short voltage);
+  void printBottomLine(char *str);
 
 private:
   LiquidCrystal *lcd;
   unsigned short m_voltage;
+  char *m_bottomLine;
+  void updateScreen();
   unsigned short getVoltageUpper();
   unsigned short getVoltageLower();
 };
