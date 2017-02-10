@@ -33,31 +33,17 @@ void setup() {
 void loop() {
   /* Statics declarations */
   static unsigned long battery_read_ts = 0;
-  static unsigned short my_voltage = 0;
-  static unsigned short highest_other_voltage = 0;
+  static uint16_t my_voltage = 0;
+  static bool is_highest = false;
   static bool updated_voltage = false;
   
   /* Get new voltage readings every VOLTAGE_READ_PERIOD seconds */
   if(battery_read_ts + VOLTAGE_READ_PERIOD * MS_PER_SEC < millis()) {
     battery_read_ts = millis();
     readVoltage(my_voltage);
+    is_highest = comms.updateVoltage(my_voltage);
     updated_voltage = true;
   }
-
-  /* Handle any messsages */
-  if(comms.hasMessage()){
-    message_t *msg = comms.getMessage();
-    switch(msg->id) {
-      case MSGID_VOLT_READING:
-        if(msg->data > highest_other_voltage) {
-          highest_other_voltage = msg->data;
-        }
-        updated_voltage = true;
-        break;
-      default:
-        break;
-    }
-  }  
 
   /* Update LEDs as necessary */
   if(updated_voltage) {
@@ -70,8 +56,8 @@ void loop() {
     else {
       leds.setGrn();
     }
-    leds.setBlinking((my_voltage > MIN_BLINKING_THRESHOLD
-                     && my_voltage > highest_other_voltage));
+    leds.setBlinking(my_voltage > MIN_BLINKING_THRESHOLD
+                     && is_highest);
   }
   leds.checkBlink();
 
@@ -82,7 +68,7 @@ void loop() {
 }
 
 /* Local function definitions */
-void readVoltage(unsigned short &voltage) {
+void readVoltage(uint16_t &voltage) {
   /* Battery */
   battery.setChargerConnected(false);
   battery.setLoadConnected(true);
@@ -90,7 +76,8 @@ void readVoltage(unsigned short &voltage) {
   voltage = battery.readBatteryVoltage();
   battery.setLoadConnected(false);
   if(BAD_CHARGER_THRESHOLD < battery.readChargerVoltage()) {
-    battery.setChargerConnected(STOP_CHARGING_THRESHOLD > voltage);
+    battery.setChargerConnected(STOP_CHARGING_THRESHOLD > voltage
+                                && MIN_RED_THRESHOLD < voltage);
     leds.clearErr();
   }
   else {
@@ -98,6 +85,5 @@ void readVoltage(unsigned short &voltage) {
     leds.setErr();
     lcd.printBottomLine(BAD_VOLTAGE_STR);
   }
-  comms.sendVoltage(voltage);
 }
 
