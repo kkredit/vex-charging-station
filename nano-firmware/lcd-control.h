@@ -16,6 +16,7 @@ public:
   void init();
   void updateBatteryVoltage(uint16_t voltage);
   void printBottomLine(char *str);
+  void checkColor();
 
 private:
   LiquidCrystal *m_lcd;

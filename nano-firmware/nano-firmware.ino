@@ -61,6 +61,9 @@ void loop() {
                      && is_highest);
   }
   leds.checkBlink();
+
+  /* Update LCD color */
+  lcd.checkColor();
 }
 
 /* Local function definitions */

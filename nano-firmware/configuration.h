@@ -14,7 +14,7 @@
 #define INIT_OUTPUT_LOW(pin)    pinMode(pin, OUTPUT); digitalWrite(pin, LOW)
 
 /* Generic defines */
-#define MS_PER_SEC  1000
+#define MS_PER_SEC  1000lu
 
 /* Conditional compiler flags */
 
@@ -47,16 +47,20 @@
 #define PIN_LCD_TEXT_D7     7
 
 /* Settings */
-#define VOLTAGE_READ_PERIOD     5   // in seconds
-#define BLINKING_PERIOD         500 // in milliseconds
-#define BLINKING_PERIOD_ERR_ON  50  // in milliseconds
-#define BLINKING_PERIOD_ERR_OFF 1950// in milliseconds
-#define MIN_BLINKING_THRESHOLD  500 // TODO placeholder; replace with ADC reading representing ~7V
-#define MIN_RED_THRESHOLD       100 // TODO placeholder; replace with ADC reading representing ~2V
-#define MIN_GRN_THRESHOLD       800 // TODO placeholder; replace with ADC reading representing ~8V
-#define STOP_CHARGING_THRESHOLD 900 // TODO placeholder; replace with ADC reading representing ~8.5V
-#define BAD_CHARGER_THRESHOLD   500 // TODO placeholder; replace with ADC reading representing ~7V
-#define VOLTAGE_READ_DELAY      50  // in ms
+#define VOLTAGE_READ_PERIOD     5lu   // in seconds
+#define COLOR_CHANGE_LATENCY    100lu // in milliseconds
+#define COLOR_CHANGE_GRAN       2     // out of 0-255
+#define COLOR_MIN_VAL           75    // out of 0-255
+#define COLOR_MAX_VAL           250    // out of 0-255
+#define BLINKING_PERIOD         500lu // in milliseconds
+#define BLINKING_PERIOD_ERR_ON  50lu  // in milliseconds
+#define BLINKING_PERIOD_ERR_OFF 1950lu // in milliseconds
+#define MIN_BLINKING_THRESHOLD  500   // TODO placeholder; replace with ADC reading representing ~7V
+#define MIN_RED_THRESHOLD       100   // TODO placeholder; replace with ADC reading representing ~2V
+#define MIN_GRN_THRESHOLD       800   // TODO placeholder; replace with ADC reading representing ~8V
+#define STOP_CHARGING_THRESHOLD 900   // TODO placeholder; replace with ADC reading representing ~8.5V
+#define BAD_CHARGER_THRESHOLD   500   // TODO placeholder; replace with ADC reading representing ~7V
+#define VOLTAGE_READ_DELAY      50    // in ms
 #define LCD_NUM_COLS            16
 #define LCD_NUM_ROWS            2
 #define MAX_NUM_SLAVES          7

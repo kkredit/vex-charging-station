@@ -44,6 +44,28 @@ void Lcd_Controller::printBottomLine(char *str) {
   this->updateScreen();
 }
 
+void Lcd_Controller::checkColor() {
+  static unsigned long color_ts = 0;
+  static const unsigned pin_color[] = 
+      {PIN_LCD_PWM_R, PIN_LCD_PWM_G, PIN_LCD_PWM_B};
+  static int pwm_color[] = {175, 150, 125};
+  static bool dir_color[] = {true, true, true};
+
+  if(color_ts + COLOR_CHANGE_LATENCY <= millis()) {
+    color_ts = millis();
+    unsigned i = random(0, 3);
+    pwm_color[i] += (dir_color[i] ? COLOR_CHANGE_GRAN : -COLOR_CHANGE_GRAN);
+    pwm_color[i] += random(-COLOR_CHANGE_GRAN, COLOR_CHANGE_GRAN + 1);
+    analogWrite(pin_color[i], pwm_color[i]);
+    if(COLOR_MIN_VAL >= pwm_color[i]) {
+      dir_color[i] = true;
+    }
+    else if(COLOR_MAX_VAL <= pwm_color[i]) {
+      dir_color[i] = false;
+    }
+  }
+}
+
 void Lcd_Controller::updateScreen() {
   m_lcd->clear();
   m_lcd->setCursor(0, 0);
