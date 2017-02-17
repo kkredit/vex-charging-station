@@ -19,32 +19,32 @@
 /* Conditional compiler flags */
 
 /* Pins */
-#define PIN_CONNECT_LOAD    2
-#define PIN_CONNECT_CHARGER 3
+#define PIN_CONNECT_LOAD    8
+#define PIN_CONNECT_CHARGER 12
 
-#define PIN_I2C_SDA         4
-#define PIN_I2C_SCL         5
+#define PIN_I2C_SDA         A4
+#define PIN_I2C_SCL         A5
 
-#define PIN_ADDR_0          6
-#define PIN_ADDR_1          7
-#define PIN_ADDR_2          8
+#define PIN_ADDR_0          A0
+#define PIN_ADDR_1          A1
+#define PIN_ADDR_2          A2
 
 #define PIN_LCD_PWM_R       9
 #define PIN_LCD_PWM_G       10
 #define PIN_LCD_PWM_B       11
 
-#define PIN_LED_GRN         12
-#define PIN_LED_RED         13
+#define PIN_LED_GRN         13
+#define PIN_LED_RED         A3
 
-#define PIN_VOLTAGE_CHARGER A0
-#define PIN_VOLTAGE_BATTERY A1
+#define PIN_VOLTAGE_CHARGER A6
+#define PIN_VOLTAGE_BATTERY A7
 
-#define PIN_LCD_TEXT_RS     A2
-#define PIN_LCD_TEXT_ENABLE A3
-#define PIN_LCD_TEXT_D4     A4
-#define PIN_LCD_TEXT_D5     A5
-#define PIN_LCD_TEXT_D6     A6
-#define PIN_LCD_TEXT_D7     A7
+#define PIN_LCD_TEXT_RS     2
+#define PIN_LCD_TEXT_ENABLE 3
+#define PIN_LCD_TEXT_D4     4
+#define PIN_LCD_TEXT_D5     5
+#define PIN_LCD_TEXT_D6     6
+#define PIN_LCD_TEXT_D7     7
 
 /* Settings */
 #define VOLTAGE_READ_PERIOD     5   // in seconds

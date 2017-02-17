@@ -14,16 +14,16 @@ class Lcd_Controller
 public:
   Lcd_Controller() {};
   void init();
-  void updateBatteryVoltage(unsigned short voltage);
+  void updateBatteryVoltage(uint16_t voltage);
   void printBottomLine(char *str);
 
 private:
-  LiquidCrystal *lcd;
-  unsigned short m_voltage;
+  LiquidCrystal *m_lcd;
+  uint16_t m_voltage;
   char *m_bottomLine;
   void updateScreen();
-  unsigned short getVoltageUpper();
-  unsigned short getVoltageLower();
+  uint16_t getVoltageUpper();
+  uint16_t getVoltageLower();
 };
 
 #endif

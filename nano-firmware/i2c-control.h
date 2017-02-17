@@ -14,7 +14,7 @@ class I2c_Controller
 public:
   I2c_Controller() {};
   void init();
-  bool updateVoltage(unsigned short voltage);
+  bool updateVoltage(uint16_t voltage);
 
 private:
   int m_address;

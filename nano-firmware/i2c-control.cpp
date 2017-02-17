@@ -9,8 +9,8 @@
 #include <Wire.h>
 
 /* Globals declarations, for use in interrupt handlers */
-volatile uint16_t g_voltage;
-volatile bool g_highest;
+static volatile uint16_t g_voltage;
+static volatile bool g_highest;
 
 /* Function declarations */
 static void requestHandler();
@@ -40,7 +40,7 @@ void I2c_Controller::init() {
   g_voltage = 0;
 }
 
-bool I2c_Controller::updateVoltage(unsigned short voltage) {
+bool I2c_Controller::updateVoltage(uint16_t voltage) {
   g_voltage = voltage;
   if(0 == m_address) {
     /* If master, get voltages from others, tell the highest voltage 
@@ -50,12 +50,15 @@ bool I2c_Controller::updateVoltage(unsigned short voltage) {
     uint16_t current_highest_voltage = g_voltage;
     uint8_t current_highest_controller = 0;
     uint16_t this_voltage;
-    for(uint8_t i = 0; i < MAX_NUM_SLAVES; i++) {
-      if(2 == Wire.requestFrom(i + 1, 2)) {
-        this_voltage = Wire.read() * 256 + Wire.read();
-        if(this_voltage > current_highest_voltage) {
-          current_highest_voltage = this_voltage;
-          current_highest_controller = i;
+    for(uint8_t i = 1; i <= MAX_NUM_SLAVES; i++) {
+      Wire.beginTransmission(i);
+      if(Wire.endTransmission() == 0) {
+        if(2 == Wire.requestFrom(i, 2u)) {
+          this_voltage = Wire.read() * 256 + Wire.read();
+          if(this_voltage > current_highest_voltage) {
+            current_highest_voltage = this_voltage;
+            current_highest_controller = i;
+          }
         }
       }
     }

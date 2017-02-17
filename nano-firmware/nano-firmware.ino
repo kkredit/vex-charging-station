@@ -12,7 +12,7 @@
 #include "lcd-control.h"
 
 /* Local function declarations */
-void readVoltage(unsigned short &voltage);
+void readVoltage(uint16_t &voltage);
 
 /* Global variables */
 Battery_Controller battery;
@@ -42,6 +42,7 @@ void loop() {
     battery_read_ts = millis();
     readVoltage(my_voltage);
     is_highest = comms.updateVoltage(my_voltage);
+    lcd.updateBatteryVoltage(my_voltage);
     updated_voltage = true;
   }
 
@@ -60,11 +61,6 @@ void loop() {
                      && is_highest);
   }
   leds.checkBlink();
-
-  /* Update LCD as necessary */
-  if(updated_voltage) {
-    lcd.updateBatteryVoltage(my_voltage);
-  }
 }
 
 /* Local function definitions */
@@ -79,6 +75,7 @@ void readVoltage(uint16_t &voltage) {
     battery.setChargerConnected(STOP_CHARGING_THRESHOLD > voltage
                                 && MIN_RED_THRESHOLD < voltage);
     leds.clearErr();
+    lcd.printBottomLine("");
   }
   else {
     /* Bad charger voltage; leave unconnected */
