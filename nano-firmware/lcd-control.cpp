@@ -5,17 +5,16 @@
  */
 
 #include "lcd-control.h"
-#include "configuration.h"
 #include <Arduino.h>
 
 #define ONE_VOLT 222
 
 /* Function definitions */
-void Lcd_Controller::init() {
+void Lcd_Controller::init(Station_Status_t *pStatus) {
+  m_pStatus = pStatus;
   INIT_OUTPUT_LOW(PIN_LCD_PWM_R);
   INIT_OUTPUT_LOW(PIN_LCD_PWM_G);
   INIT_OUTPUT_LOW(PIN_LCD_PWM_B);
-
   m_lcd = new LiquidCrystal(PIN_LCD_TEXT_RS,
                             PIN_LCD_TEXT_ENABLE,
                             PIN_LCD_TEXT_D4,
@@ -29,19 +28,25 @@ void Lcd_Controller::init() {
   m_lcd->noAutoscroll();
   m_lcd->leftToRight();
   m_lcd->print("Initializing");
-
-  m_voltage = 0;
-  m_bottomLine = "";
 }
 
-void Lcd_Controller::updateBatteryVoltage(uint16_t voltage) {
-  m_voltage = voltage;
-  this->updateScreen();
-}
-
-void Lcd_Controller::printBottomLine(char *str) {
-  m_bottomLine = str;
-  this->updateScreen();
+void Lcd_Controller::updateScreen() {
+  m_lcd->clear();
+  m_lcd->setCursor(0, 0);
+  m_lcd->print("VOLTAGE: ");
+  m_lcd->print(this->getVoltageUpper());
+  m_lcd->print(".");
+  m_lcd->print(this->getVoltageLower());
+  m_lcd->print(" V");
+  m_lcd->setCursor(0, 1);
+  if(m_pStatus->error_vector) {
+    if(m_pStatus->error_vector & ERR_CHARGER_VOLTAGE) {
+      m_lcd->print("Bad charger!");
+    }
+  }
+  else {
+    // TODO fill in percent charged, current draw, ETA
+  }
 }
 
 void Lcd_Controller::checkColor() {
@@ -66,23 +71,11 @@ void Lcd_Controller::checkColor() {
   }
 }
 
-void Lcd_Controller::updateScreen() {
-  m_lcd->clear();
-  m_lcd->setCursor(0, 0);
-  m_lcd->print("VOLTAGE: ");
-  m_lcd->print(this->getVoltageUpper());
-  m_lcd->print(".");
-  m_lcd->print(this->getVoltageLower());
-  m_lcd->print(" V");
-  m_lcd->setCursor(0, 1);
-  m_lcd->print(m_bottomLine);
-}
-
 uint16_t Lcd_Controller::getVoltageUpper() {
-  return m_voltage / ONE_VOLT;
+  return m_pStatus->voltage / ONE_VOLT;
 }
 
 uint16_t Lcd_Controller::getVoltageLower() {
-  return ((m_voltage % ONE_VOLT) * 100u) / ONE_VOLT;
+  return ((m_pStatus->voltage % ONE_VOLT) * 100u) / ONE_VOLT;
 }
 

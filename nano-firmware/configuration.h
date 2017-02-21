@@ -9,14 +9,26 @@
 
 #include <Arduino.h>
 
+/* Typedefs */
+typedef struct {
+  uint16_t voltage;
+  uint8_t  error_vector;
+} Station_Status_t;
+
+typedef enum {
+  CMC_HIGHEST_VOLTAGE = 0,
+  CMC_NOT_HIGHEST_VOLTAGE,
+} comms_msg_code_t;
+
 /* Utility macros */
 #define INIT_INPUT_PULLUP(pin)  pinMode(pin, INPUT);  digitalWrite(pin, HIGH)
 #define INIT_OUTPUT_LOW(pin)    pinMode(pin, OUTPUT); digitalWrite(pin, LOW)
 
+/* Errors -- in order of significance */
+#define ERR_CHARGER_VOLTAGE 0x1
+
 /* Generic defines */
 #define MS_PER_SEC  1000lu
-
-/* Conditional compiler flags */
 
 /* Pins */
 #define PIN_CONNECT_LOAD    8
@@ -65,16 +77,6 @@
 #define LCD_NUM_ROWS            2
 #define MAX_NUM_SLAVES          7
 #define I2C_FREQUENCY           100000
-
-#define BAD_VOLTAGE_STR         "BAD CHARGER!"
-
-typedef enum {
-  CMC_HIGHEST_VOLTAGE = 0,
-  CMC_NOT_HIGHEST_VOLTAGE,
-
-  /* DO NOT MODIFY BELOW THIS LINE */
-  CMC_MAX_VAL = 255,
-} comms_msg_code_t;
 
 #endif
 

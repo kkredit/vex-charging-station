@@ -19,13 +19,18 @@ Battery_Controller battery;
 I2c_Controller comms;
 Led_Controller leds;
 Lcd_Controller lcd;
+Station_Status_t g_status;
 
 void setup() {
+  /* Init status */
+  g_status.voltage = 0;
+  g_status.error_vector = 0;
+
   /* Init control objects */
-  battery.init();
-  comms.init();
-  leds.init();
-  lcd.init();
+  battery.init(&g_status);
+  comms.init(&g_status);
+  leds.init(&g_status);
+  lcd.init(&g_status);
 
   /* Get initial readings */
 }
@@ -42,7 +47,7 @@ void loop() {
     battery_read_ts = millis();
     readVoltage(my_voltage);
     is_highest = comms.updateVoltage(my_voltage);
-    lcd.updateBatteryVoltage(my_voltage);
+    lcd.updateScreen();
     updated_voltage = true;
   }
 
@@ -77,13 +82,11 @@ void readVoltage(uint16_t &voltage) {
   if(BAD_CHARGER_THRESHOLD < battery.readChargerVoltage()) {
     battery.setChargerConnected(STOP_CHARGING_THRESHOLD > voltage
                                 && MIN_RED_THRESHOLD < voltage);
-    leds.clearErr();
-    lcd.printBottomLine("");
+    g_status.error_vector &= ~ERR_CHARGER_VOLTAGE;
   }
   else {
     /* Bad charger voltage; leave unconnected */
-    leds.setErr();
-    lcd.printBottomLine(BAD_VOLTAGE_STR);
+    g_status.error_vector |= ERR_CHARGER_VOLTAGE;
   }
 }
 

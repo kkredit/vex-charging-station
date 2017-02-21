@@ -5,7 +5,6 @@
  */
 
 #include "i2c-control.h"
-#include "configuration.h"
 #include <Wire.h>
 
 /* Globals declarations, for use in interrupt handlers */
@@ -17,7 +16,8 @@ static void requestHandler();
 static void receiveHandler(int num_bytes);
 
 /* Function definitions */
-void I2c_Controller::init() {
+void I2c_Controller::init(Station_Status_t *pStatus) {
+  m_pStatus = pStatus;
   INIT_INPUT_PULLUP(PIN_ADDR_0);
   INIT_INPUT_PULLUP(PIN_ADDR_1);
   INIT_INPUT_PULLUP(PIN_ADDR_2);
