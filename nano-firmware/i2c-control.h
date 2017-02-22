@@ -15,7 +15,7 @@ class I2c_Controller
 public:
   I2c_Controller() {};
   void init(Station_Status_t *pStatus);
-  bool updateVoltage(uint16_t voltage);
+  bool getUpdate();
 
 private:
   Station_Status_t *m_pStatus;

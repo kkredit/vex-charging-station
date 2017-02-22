@@ -15,10 +15,62 @@ typedef struct {
   uint8_t  error_vector;
 } Station_Status_t;
 
+// Note: color is uint8_t, but use math that requires int16_t
+typedef struct {
+  int16_t r;
+  int16_t g;
+  int16_t b;
+} rgb_t;
+
 typedef enum {
   CMC_HIGHEST_VOLTAGE = 0,
   CMC_NOT_HIGHEST_VOLTAGE,
 } comms_msg_code_t;
+
+/* Color settings */
+//#define RANDOM_COLORS // Comment out this line and re-upload for intentional colors
+#define COLOR_1 rgb_um_blue
+#define COLOR_2 rgb_um_maize
+#define COLOR_3 rgb_um_white
+
+/* Generic colors according to 
+ * http://www.rapidtables.com/web/color/RGB_Color.htm */
+const rgb_t rgb_black   = {0  , 0  , 0  };
+const rgb_t rgb_white   = {255, 255, 255};
+const rgb_t rgb_red     = {255, 0  , 0  };
+const rgb_t rgb_lime    = {0  , 255, 0  };
+const rgb_t rgb_blue    = {0  , 0  , 255};
+const rgb_t rgb_yellow  = {255, 255, 0  };
+const rgb_t rgb_cyan    = {0  , 255, 255};
+const rgb_t rgb_magenta = {255, 0  , 255};
+const rgb_t rgb_silver  = {192, 192, 192};
+const rgb_t rgb_gray    = {128, 128, 128};
+const rgb_t rgb_maroon  = {128, 0  , 0  };
+const rgb_t rgb_olive   = {128, 128, 0  };
+const rgb_t rgb_green   = {0  , 128, 0  };
+const rgb_t rgb_purple  = {128, 0  , 128};
+const rgb_t rgb_teal    = {0  , 128, 128};
+const rgb_t rgb_navy    = {0  , 0  , 128};
+/* GRCS */
+const rgb_t rgb_grcs_navy  = {0  , 46 , 72 };
+const rgb_t rgb_grcs_baby  = {113, 180, 225};
+const rgb_t rgb_grcs_white = rgb_white;
+/* University of Michigan */
+const rgb_t rgb_um_blue  = {0  , 45 , 98 };
+const rgb_t rgb_um_maize = {255, 128, 6  };
+const rgb_t rgb_um_white = rgb_white;
+/* Michigan State University */
+const rgb_t rgb_msu_green  = {4  , 30 , 4  };
+const rgb_t rgb_msu_white  = rgb_gray;
+const rgb_t rgb_msu_bright = {20 , 150, 20 };
+/* Christmas */
+const rgb_t rgb_chrs_red   = rgb_red;
+const rgb_t rgb_chrs_green = {0  , 255, 0  };
+const rgb_t rgb_chrs_white = rgb_white;
+/* Halloween */
+const rgb_t rgb_hllw_orange = {255, 64 , 0  };
+const rgb_t rgb_hllw_black  = rgb_black;
+const rgb_t rgb_hllw_white  = rgb_white;
 
 /* Utility macros */
 #define INIT_INPUT_PULLUP(pin)  pinMode(pin, INPUT);  digitalWrite(pin, HIGH)
@@ -61,9 +113,11 @@ typedef enum {
 /* Settings */
 #define VOLTAGE_READ_PERIOD     5lu   // in seconds
 #define COLOR_CHANGE_LATENCY    100lu // in milliseconds
-#define COLOR_CHANGE_GRAN       2     // out of 0-255
-#define COLOR_MIN_VAL           75    // out of 0-255
-#define COLOR_MAX_VAL           250    // out of 0-255
+#define COLOR_RAND_CHANGE_GRAN  2     // out of 0-255
+#define COLOR_RAND_MIN_VAL      25    // out of 0-255
+#define COLOR_RAND_MAX_VAL      250   // out of 0-255
+#define COLOR_SCHEM_PCT_GRAN    1     // in percent
+#define COLOR_SCHEM_ODDS_FLIP   100   // avg number updates between changing direction
 #define BLINKING_PERIOD         500lu // in milliseconds
 #define BLINKING_PERIOD_ERR_ON  50lu  // in milliseconds
 #define BLINKING_PERIOD_ERR_OFF 1950lu // in milliseconds

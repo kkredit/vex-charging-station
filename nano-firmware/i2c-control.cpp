@@ -8,7 +8,7 @@
 #include <Wire.h>
 
 /* Globals declarations, for use in interrupt handlers */
-static volatile uint16_t g_voltage;
+extern Station_Status_t g_status;
 static volatile bool g_highest;
 
 /* Function declarations */
@@ -36,18 +36,14 @@ void I2c_Controller::init(Station_Status_t *pStatus) {
     Wire.onReceive(receiveHandler);
     g_highest = false;
   }
-
-  g_voltage = 0;
 }
 
-bool I2c_Controller::updateVoltage(uint16_t voltage) {
-  g_voltage = voltage;
+bool I2c_Controller::getUpdate() {
   if(0 == m_address) {
     /* If master, get voltages from others, tell the highest voltage 
-     *  that it is highest
-     */
+     * that it is highest */
     static uint8_t reigning_highest_controller = 0;
-    uint16_t current_highest_voltage = g_voltage;
+    uint16_t current_highest_voltage = m_pStatus->voltage;
     uint8_t current_highest_controller = 0;
     uint16_t this_voltage;
     for(uint8_t i = 1; i <= MAX_NUM_SLAVES; i++) {
@@ -87,7 +83,7 @@ bool I2c_Controller::updateVoltage(uint16_t voltage) {
 }
 
 static void requestHandler() {
-  Wire.write(g_voltage);
+  Wire.write(g_status.voltage);
 }
 
 static void receiveHandler(int num_bytes) {
