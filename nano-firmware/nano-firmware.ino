@@ -67,7 +67,7 @@ void loop() {
 
 /* Local function definitions */
 void readVoltage(uint16_t &voltage) {
-  battery.readCurrentDraw();
+  g_status.current = battery.readCurrentDraw();
   battery.setChargerConnected(false);
   battery.setLoadConnected(true);
   delay(VOLTAGE_READ_DELAY);

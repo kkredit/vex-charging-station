@@ -9,8 +9,8 @@
 #include <string.h>
 
 #define ONE_VOLT 222
-#define MICROAMPS_PER_ADC 2000
-#define MICROA_PER_MILLIA 1000
+#define MICROAMPS_PER_ADC 2000lu
+#define MICROA_PER_MILLIA 1000lu
 
 /* Function definitions */
 void Lcd_Controller::init(Station_Status_t *pStatus) {
@@ -53,7 +53,7 @@ void Lcd_Controller::updateScreen() {
   }
   else if(MIN_RED_THRESHOLD < m_pStatus->voltage) { 
     m_bottomLineLen = snprintf(m_bottomLine, LCD_BOTTOM_LINE_MAX_LEN,
-                               "Current: %umA > %u%% > %s till full > ",
+                               "current: %umA > %u%% > %s till full > ",
                                getCurrent(), getPercent(), getTimeStr());
     m_bottomLineIndex %= m_bottomLineLen;
     m_lcd->print(getBottomLineSubstr());
@@ -133,7 +133,8 @@ uint16_t Lcd_Controller::getVoltageLower() {
 }
 
 uint16_t Lcd_Controller::getCurrent() {
-  return (MICROAMPS_PER_ADC * m_pStatus->current) / MICROA_PER_MILLIA;
+  return (uint16_t)((MICROAMPS_PER_ADC * (uint32_t)m_pStatus->current) 
+                    / MICROA_PER_MILLIA);
 }
 
 uint16_t Lcd_Controller::getPercent() {
