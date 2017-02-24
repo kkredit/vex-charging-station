@@ -24,6 +24,7 @@ Station_Status_t g_status;
 void setup() {
   /* Init status */
   g_status.voltage = 0;
+  g_status.current = 0;
   g_status.error_vector = 0;
 
   /* Init control objects */
@@ -31,8 +32,6 @@ void setup() {
   comms.init(&g_status);
   leds.init(&g_status);
   lcd.init(&g_status);
-
-  /* Get initial readings */
 }
 
 void loop() {
@@ -62,12 +61,13 @@ void loop() {
 
   /* Monitor LED blink, LCD color updates */
   leds.checkBlink();
+  lcd.checkScroll();
   lcd.checkColor();
 }
 
 /* Local function definitions */
 void readVoltage(uint16_t &voltage) {
-  /* Battery */
+  battery.readCurrentDraw();
   battery.setChargerConnected(false);
   battery.setLoadConnected(true);
   delay(VOLTAGE_READ_DELAY);

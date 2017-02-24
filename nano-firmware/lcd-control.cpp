@@ -6,8 +6,11 @@
 
 #include "lcd-control.h"
 #include <Arduino.h>
+#include <string.h>
 
 #define ONE_VOLT 222
+#define MICROAMPS_PER_ADC 2000
+#define MICROA_PER_MILLIA 1000
 
 /* Function definitions */
 void Lcd_Controller::init(Station_Status_t *pStatus) {
@@ -28,12 +31,16 @@ void Lcd_Controller::init(Station_Status_t *pStatus) {
   m_lcd->noAutoscroll();
   m_lcd->leftToRight();
   m_lcd->print("Initializing");
+
+  memset(m_bottomLine, 0, sizeof(m_bottomLine));
+  m_bottomLineIndex = 0;
+  m_bottomLineLen = 1;
 }
 
 void Lcd_Controller::updateScreen() {
   m_lcd->clear();
   m_lcd->setCursor(0, 0);
-  m_lcd->print("VOLTAGE: ");
+  m_lcd->print("Voltage: ");
   m_lcd->print(getVoltageUpper());
   m_lcd->print(".");
   m_lcd->print(getVoltageLower());
@@ -41,11 +48,15 @@ void Lcd_Controller::updateScreen() {
   m_lcd->setCursor(0, 1);
   if(m_pStatus->error_vector) {
     if(m_pStatus->error_vector & ERR_CHARGER_VOLTAGE) {
-      m_lcd->print("Bad charger!");
+      m_lcd->print("Bad Charger!");
     }
   }
-  else {
-    // TODO fill in percent charged, current draw, ETA
+  else if(MIN_RED_THRESHOLD < m_pStatus->voltage) { 
+    m_bottomLineLen = snprintf(m_bottomLine, LCD_BOTTOM_LINE_MAX_LEN,
+                               "Current: %umA > %u%% > %s till full > ",
+                               getCurrent(), getPercent(), getTimeStr());
+    m_bottomLineIndex %= m_bottomLineLen;
+    m_lcd->print(getBottomLineSubstr());
   }
 }
 
@@ -103,11 +114,44 @@ void Lcd_Controller::checkColor() {
   }
 }
 
+void Lcd_Controller::checkScroll() {
+  static unsigned long scroll_ts = 0;
+  if(scroll_ts + LCD_SCROLL_LATENCY_MS <= millis()) {
+    scroll_ts = millis();
+    m_bottomLineIndex = (m_bottomLineIndex + 1) % m_bottomLineLen;
+    m_lcd->setCursor(0, 1);
+    m_lcd->print(getBottomLineSubstr());
+  }
+}
+
 uint16_t Lcd_Controller::getVoltageUpper() {
   return m_pStatus->voltage / ONE_VOLT;
 }
 
 uint16_t Lcd_Controller::getVoltageLower() {
   return ((m_pStatus->voltage % ONE_VOLT) * 100u) / ONE_VOLT;
+}
+
+uint16_t Lcd_Controller::getCurrent() {
+  return (MICROAMPS_PER_ADC * m_pStatus->current) / MICROA_PER_MILLIA;
+}
+
+uint16_t Lcd_Controller::getPercent() {
+  // TODO develop means of telling percent charged
+  return 0;
+}
+char * Lcd_Controller::getTimeStr() {
+  // TODO develop means of telling time remaining
+  return "0:00";
+}
+
+char * Lcd_Controller::getBottomLineSubstr() {
+  static char substr[LCD_NUM_COLS + 1] = {0};
+  memset(substr, ' ', LCD_NUM_COLS);
+  int16_t writeLen = min(LCD_NUM_COLS, m_bottomLineLen - m_bottomLineIndex);
+  memcpy(substr, m_bottomLine + m_bottomLineIndex, writeLen);
+  memcpy(substr + min(LCD_NUM_COLS, writeLen),
+         m_bottomLine, max(0, LCD_NUM_COLS - writeLen));
+  return substr;
 }
 

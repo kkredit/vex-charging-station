@@ -12,16 +12,21 @@ void Battery_Controller::init(Station_Status_t *pStatus) {
   m_pStatus = pStatus;
   pinMode(PIN_VOLTAGE_BATTERY, INPUT);
   pinMode(PIN_VOLTAGE_CHARGER, INPUT);
+  pinMode(PIN_CURRENT_DRAW, INPUT);
   INIT_OUTPUT_LOW(PIN_CONNECT_LOAD);
   INIT_OUTPUT_LOW(PIN_CONNECT_CHARGER);
 }
 
-unsigned short Battery_Controller::readBatteryVoltage() {
+uint16_t Battery_Controller::readBatteryVoltage() {
   return analogRead(PIN_VOLTAGE_BATTERY);
 }
 
-unsigned short Battery_Controller::readChargerVoltage() {
+uint16_t Battery_Controller::readChargerVoltage() {
   return analogRead(PIN_VOLTAGE_CHARGER);
+}
+
+uint16_t Battery_Controller::readCurrentDraw() {
+  return analogRead(PIN_CURRENT_DRAW);
 }
 
 void Battery_Controller::setLoadConnected(bool setval) {

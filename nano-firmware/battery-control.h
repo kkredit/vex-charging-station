@@ -14,8 +14,9 @@ class Battery_Controller
 public:
   Battery_Controller() {};
   void init(Station_Status_t *pStatus);
-  unsigned short readBatteryVoltage();
-  unsigned short readChargerVoltage();
+  uint16_t readBatteryVoltage();
+  uint16_t readChargerVoltage();
+  uint16_t readCurrentDraw();
   void setLoadConnected(bool setval);
   void setChargerConnected(bool setval);
 

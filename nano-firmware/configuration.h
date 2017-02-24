@@ -12,6 +12,7 @@
 /* Typedefs */
 typedef struct {
   uint16_t voltage;
+  uint16_t current;
   uint8_t  error_vector;
 } Station_Status_t;
 
@@ -57,7 +58,7 @@ const rgb_t rgb_grcs_baby  = {113, 180, 225};
 const rgb_t rgb_grcs_white = rgb_white;
 /* University of Michigan */
 const rgb_t rgb_um_blue  = {0  , 45 , 98 };
-const rgb_t rgb_um_maize = {255, 128, 6  };
+const rgb_t rgb_um_maize = {255, 165, 30 };
 const rgb_t rgb_um_white = rgb_white;
 /* Michigan State University */
 const rgb_t rgb_msu_green  = {4  , 30 , 4  };
@@ -97,9 +98,10 @@ const rgb_t rgb_hllw_white  = rgb_white;
 #define PIN_LCD_PWM_G       10
 #define PIN_LCD_PWM_B       11
 
+#define PIN_LED_RED         0
 #define PIN_LED_GRN         13
-#define PIN_LED_RED         A3
 
+#define PIN_CURRENT_DRAW    A3
 #define PIN_VOLTAGE_CHARGER A6
 #define PIN_VOLTAGE_BATTERY A7
 
@@ -129,6 +131,8 @@ const rgb_t rgb_hllw_white  = rgb_white;
 #define VOLTAGE_READ_DELAY      50    // in ms
 #define LCD_NUM_COLS            16
 #define LCD_NUM_ROWS            2
+#define LCD_BOTTOM_LINE_MAX_LEN 128
+#define LCD_SCROLL_LATENCY_MS   1000
 #define MAX_NUM_SLAVES          7
 #define I2C_FREQUENCY           100000
 
