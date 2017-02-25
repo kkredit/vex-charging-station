@@ -47,17 +47,31 @@ void Lcd_Controller::updateScreen() {
   m_lcd->print(" V");
   m_lcd->setCursor(0, 1);
   if(m_pStatus->error_vector) {
+    m_bottomLineIndex = 0;
     if(m_pStatus->error_vector & ERR_CHARGER_VOLTAGE) {
-      m_lcd->print("Bad Charger!");
+      m_bottomLineLen = snprintf(m_bottomLine, LCD_BOTTOM_LINE_MAX_LEN,
+                                 "Bad charger!     ");
+    }
+    else {
+      m_bottomLineLen = snprintf(m_bottomLine, LCD_BOTTOM_LINE_MAX_LEN,
+                                 "Reset board");
     }
   }
-  else if(MIN_RED_THRESHOLD < m_pStatus->voltage) { 
+  else if(MIN_RED_THRESHOLD > m_pStatus->voltage) {
     m_bottomLineLen = snprintf(m_bottomLine, LCD_BOTTOM_LINE_MAX_LEN,
-                               "current: %umA > %u%% > %s till full > ",
-                               getCurrent(), getPercent(), getTimeStr());
-    m_bottomLineIndex %= m_bottomLineLen;
-    m_lcd->print(getBottomLineSubstr());
+                               "unconnected          ");
   }
+  else if(STOP_CHARGING_THRESHOLD < m_pStatus->voltage) {
+    m_bottomLineLen = snprintf(m_bottomLine, LCD_BOTTOM_LINE_MAX_LEN,
+                               "Fully charged!       ");
+  }
+  else {
+    m_bottomLineLen = snprintf(m_bottomLine, LCD_BOTTOM_LINE_MAX_LEN,
+                               "current: %umA > %u%% > %s left > ",
+                               getCurrent(), getPercent(), getTimeStr());
+  }
+  m_bottomLineIndex %= m_bottomLineLen;
+  m_lcd->print(getBottomLineSubstr());
 }
 
 void Lcd_Controller::checkColor() {
@@ -65,8 +79,18 @@ void Lcd_Controller::checkColor() {
   static const unsigned pin_color[] = 
       {PIN_LCD_PWM_R, PIN_LCD_PWM_G, PIN_LCD_PWM_B};
 
-  if(color_ts + COLOR_CHANGE_LATENCY <= millis()) {
+  static bool errorSet = false;
+  if(m_pStatus->error_vector) {
+    if(!errorSet) {
+      errorSet = true;
+      analogWrite(pin_color[0], 255);
+      analogWrite(pin_color[1], 255);
+      analogWrite(pin_color[2], 255);
+    }
+  }
+  else if(color_ts + COLOR_CHANGE_LATENCY <= millis()) {
     color_ts = millis();
+    errorSet = false;
 
 #if !defined(RANDOM_COLORS) && defined(COLOR_1) && defined(COLOR_2) && defined(COLOR_3)
     /* Intentional color scheme */
@@ -116,7 +140,8 @@ void Lcd_Controller::checkColor() {
 
 void Lcd_Controller::checkScroll() {
   static unsigned long scroll_ts = 0;
-  if(scroll_ts + LCD_SCROLL_LATENCY_MS <= millis()) {
+  if(scroll_ts + LCD_SCROLL_LATENCY_MS <= millis()
+     && !m_pStatus->error_vector) {
     scroll_ts = millis();
     m_bottomLineIndex = (m_bottomLineIndex + 1) % m_bottomLineLen;
     m_lcd->setCursor(0, 1);
