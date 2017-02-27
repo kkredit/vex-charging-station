@@ -20,6 +20,59 @@ void Led_Controller::init(Station_Status_t *pStatus) {
   m_redCurrent   = false;
 }
 
+void Led_Controller::updateColors() {
+  if(NO_BATTERY_THRESHOLD < m_pStatus->voltage) {
+    turnOff();
+  }
+  else if(MIN_GRN_THRESHOLD > m_pStatus->voltage) {
+    setRed();
+  }
+  else {
+    setGrn();
+  }
+  setBlinking(MIN_BLINKING_THRESHOLD < m_pStatus->voltage
+              && m_pStatus->is_highest);
+}
+
+void Led_Controller::checkBlink() {
+  static unsigned long blink_ts = 0;
+  static bool prevHadError = false;
+  if(m_pStatus->error_vector) {
+    if(!prevHadError) {
+      prevHadError = true;
+      m_isBlinking = false;
+      digitalWrite(PIN_LED_GRN, false);
+      digitalWrite(PIN_LED_RED, false);
+      m_greenCurrent = false;
+      m_redCurrent = false;
+    }
+    else {
+      if(m_redCurrent 
+         && blink_ts + BLINKING_PERIOD_ERR_ON < millis()) {
+        blink_ts = millis();
+        m_redCurrent = false;
+        digitalWrite(PIN_LED_RED, m_redCurrent);
+      }
+      else if (!m_redCurrent
+               && blink_ts + BLINKING_PERIOD_ERR_OFF < millis()) {
+        blink_ts = millis();
+        m_redCurrent = true;
+        digitalWrite(PIN_LED_RED, m_redCurrent);
+      }
+    }
+  }
+  else {
+    prevHadError = false;
+    if(m_isBlinking && blink_ts + BLINKING_PERIOD < millis()) {
+      blink_ts = millis();
+      m_greenCurrent = m_green && !m_greenCurrent;
+      m_redCurrent = m_red && !m_redCurrent;
+      digitalWrite(PIN_LED_GRN, m_greenCurrent);
+      digitalWrite(PIN_LED_RED, m_redCurrent);
+    }
+  }
+}
+
 void Led_Controller::turnOff() {
   if(!m_pStatus->error_vector) {
     digitalWrite(PIN_LED_GRN, false);
@@ -67,45 +120,6 @@ void Led_Controller::setBlinking(bool setval) {
         m_redCurrent = m_red;
         digitalWrite(PIN_LED_RED, m_red);
       }
-    }
-  }
-}
-
-void Led_Controller::checkBlink() {
-  static unsigned long blink_ts = 0;
-  static bool prevHadError = false;
-  if(m_pStatus->error_vector) {
-    if(!prevHadError) {
-      prevHadError = true;
-      m_isBlinking = false;
-      digitalWrite(PIN_LED_GRN, false);
-      digitalWrite(PIN_LED_RED, false);
-      m_greenCurrent = false;
-      m_redCurrent = false;
-    }
-    else {
-      if(m_redCurrent 
-         && blink_ts + BLINKING_PERIOD_ERR_ON < millis()) {
-        blink_ts = millis();
-        m_redCurrent = false;
-        digitalWrite(PIN_LED_RED, m_redCurrent);
-      }
-      else if (!m_redCurrent
-               && blink_ts + BLINKING_PERIOD_ERR_OFF < millis()) {
-        blink_ts = millis();
-        m_redCurrent = true;
-        digitalWrite(PIN_LED_RED, m_redCurrent);
-      }
-    }
-  }
-  else {
-    prevHadError = false;
-    if(m_isBlinking && blink_ts + BLINKING_PERIOD < millis()) {
-      blink_ts = millis();
-      m_greenCurrent = m_green && !m_greenCurrent;
-      m_redCurrent = m_red && !m_redCurrent;
-      digitalWrite(PIN_LED_GRN, m_greenCurrent);
-      digitalWrite(PIN_LED_RED, m_redCurrent);
     }
   }
 }

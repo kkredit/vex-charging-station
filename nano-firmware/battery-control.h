@@ -15,10 +15,7 @@ public:
   Battery_Controller() {};
   void init(Station_Status_t *pStatus);
   uint16_t readBatteryVoltage();
-  uint16_t readChargerVoltage();
   uint16_t readCurrentDraw();
-  void setLoadConnected(bool setval);
-  void setChargerConnected(bool setval);
 
 private:
   Station_Status_t *m_pStatus;

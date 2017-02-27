@@ -11,8 +11,8 @@
 #include "led-control.h"
 #include "lcd-control.h"
 
-/* Local function declarations */
-void readVoltage(uint16_t &voltage);
+/* Local functions declarations */
+void checkErrors();
 
 /* Global variables */
 Battery_Controller battery;
@@ -25,6 +25,7 @@ void setup() {
   /* Init status */
   g_status.voltage = 0;
   g_status.current = 0;
+  g_status.is_highest = false;
   g_status.error_vector = 0;
 
   /* Init control objects */
@@ -37,26 +38,16 @@ void setup() {
 void loop() {
   /* Statics declarations */
   static unsigned long battery_read_ts = 0;
-  static bool is_highest = false;
-  
+
   /* Get new voltage readings every VOLTAGE_READ_PERIOD seconds */
   if(battery_read_ts + VOLTAGE_READ_PERIOD * MS_PER_SEC < millis()) {
     battery_read_ts = millis();
-    readVoltage(g_status.voltage);
-    is_highest = comms.getUpdate();
+    g_status.current = battery.readCurrentDraw();
+    g_status.voltage = battery.readBatteryVoltage();
+    checkErrors();
+    g_status.is_highest = comms.getUpdate();
     lcd.updateScreen();
-
-    if(MIN_RED_THRESHOLD > g_status.voltage) {
-      leds.turnOff();
-    }
-    else if(MIN_GRN_THRESHOLD > g_status.voltage) {
-      leds.setRed();
-    }
-    else {
-      leds.setGrn();
-    }
-    leds.setBlinking(MIN_BLINKING_THRESHOLD < g_status.voltage
-                     && is_highest);
+    leds.updateColors();
   }
 
   /* Monitor LED blink, LCD color updates */
@@ -65,22 +56,14 @@ void loop() {
   lcd.checkColor();
 }
 
-/* Local function definitions */
-void readVoltage(uint16_t &voltage) {
-  g_status.current = battery.readCurrentDraw();
-  battery.setChargerConnected(false);
-  battery.setLoadConnected(true);
-  delay(VOLTAGE_READ_DELAY);
-  voltage = battery.readBatteryVoltage();
-  battery.setLoadConnected(false);
-  if(BAD_CHARGER_THRESHOLD < battery.readChargerVoltage()) {
-    battery.setChargerConnected(STOP_CHARGING_THRESHOLD > voltage
-                                && MIN_RED_THRESHOLD < voltage);
-    g_status.error_vector &= ~ERR_CHARGER_VOLTAGE;
+/* Local functions definitions */
+void checkErrors() {
+  /* Check for ERR_CHARGER_VOLTAGE */
+  if(BAD_CHARGER_THRESHOLD > g_status.voltage) {
+    g_status.error_vector |= ERR_CHARGER_VOLTAGE;
   }
   else {
-    /* Bad charger voltage; leave unconnected */
-    g_status.error_vector |= ERR_CHARGER_VOLTAGE;
+    g_status.error_vector &= ~ERR_CHARGER_VOLTAGE;
   }
 }
 

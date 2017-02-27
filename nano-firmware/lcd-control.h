@@ -25,8 +25,7 @@ private:
   char m_bottomLine[LCD_BOTTOM_LINE_MAX_LEN];
   uint8_t m_bottomLineIndex;
   uint8_t m_bottomLineLen;
-  uint16_t getVoltageUpper();
-  uint16_t getVoltageLower();
+  char *getVoltageStr();
   uint16_t getCurrent();
   uint16_t getPercent();
   char *getTimeStr();

@@ -14,12 +14,7 @@ class Led_Controller
 public:
   Led_Controller() {};
   void init(Station_Status_t *pStatus);
-  void turnOff();
-  void setRed();
-  void setGrn();
-  void setErr();
-  void clearErr();
-  void setBlinking(bool setval);
+  void updateColors();
   void checkBlink();
 
 private:
@@ -29,6 +24,10 @@ private:
   bool m_greenCurrent;
   bool m_red;
   bool m_redCurrent;
+  void turnOff();
+  void setRed();
+  void setGrn();
+  void setBlinking(bool setval);
 };
 
 #endif

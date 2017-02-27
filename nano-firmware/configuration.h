@@ -13,6 +13,7 @@
 typedef struct {
   uint16_t voltage;
   uint16_t current;
+  bool is_highest;
   uint8_t  error_vector;
 } Station_Status_t;
 
@@ -30,9 +31,9 @@ typedef enum {
 
 /* Color settings */
 //#define RANDOM_COLORS // Comment out this line and re-upload for intentional colors
-#define COLOR_1 rgb_um_blue
-#define COLOR_2 rgb_um_maize
-#define COLOR_3 rgb_um_white
+#define COLOR_1 rgb_msu_green
+#define COLOR_2 rgb_msu_white
+#define COLOR_3 rgb_msu_bright
 
 /* Generic colors according to 
  * http://www.rapidtables.com/web/color/RGB_Color.htm */
@@ -84,9 +85,6 @@ const rgb_t rgb_hllw_white  = rgb_white;
 #define MS_PER_SEC  1000lu
 
 /* Pins */
-#define PIN_CONNECT_LOAD    8
-#define PIN_CONNECT_CHARGER 12
-
 #define PIN_I2C_SDA         A4
 #define PIN_I2C_SCL         A5
 
@@ -98,11 +96,10 @@ const rgb_t rgb_hllw_white  = rgb_white;
 #define PIN_LCD_PWM_G       10
 #define PIN_LCD_PWM_B       11
 
-#define PIN_LED_RED         0
-#define PIN_LED_GRN         13
+#define PIN_LED_RED         8
+#define PIN_LED_GRN         12
 
-#define PIN_CURRENT_DRAW    A3
-#define PIN_VOLTAGE_CHARGER A6
+#define PIN_CURRENT_DRAW    A6
 #define PIN_VOLTAGE_BATTERY A7
 
 #define PIN_LCD_TEXT_RS     2
@@ -123,11 +120,10 @@ const rgb_t rgb_hllw_white  = rgb_white;
 #define BLINKING_PERIOD         500lu // in milliseconds
 #define BLINKING_PERIOD_ERR_ON  50lu  // in milliseconds
 #define BLINKING_PERIOD_ERR_OFF 1950lu // in milliseconds
-#define MIN_BLINKING_THRESHOLD  500   // TODO placeholder; replace with ADC reading representing ~7V
-#define MIN_RED_THRESHOLD       100   // TODO placeholder; replace with ADC reading representing ~2V
-#define MIN_GRN_THRESHOLD       800   // TODO placeholder; replace with ADC reading representing ~8V
-#define STOP_CHARGING_THRESHOLD 900   // TODO placeholder; replace with ADC reading representing ~8.5V
-#define BAD_CHARGER_THRESHOLD   500   // TODO placeholder; replace with ADC reading representing ~7V
+#define MIN_BLINKING_THRESHOLD  350   // TODO placeholder; replace with ADC reading representing ~7V
+#define MIN_GRN_THRESHOLD       400   // TODO placeholder; replace with ADC reading representing ~8V
+#define BAD_CHARGER_THRESHOLD   100
+#define NO_BATTERY_THRESHOLD    600
 #define VOLTAGE_READ_DELAY      50    // in ms
 #define LCD_NUM_COLS            16
 #define LCD_NUM_ROWS            2
