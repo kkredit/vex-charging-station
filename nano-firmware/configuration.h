@@ -86,6 +86,8 @@ typedef enum {
   NUMBER_OF_CS,
 } color_scheme_t;
 
+#define CS_DEFAULT CS_RANDOM
+
 typedef struct {
   color_scheme_t  cs;
   char            *name;

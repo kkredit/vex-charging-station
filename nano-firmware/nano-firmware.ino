@@ -30,7 +30,7 @@ void setup() {
   g_status.voltage = 0;
   g_status.current = 0;
   g_status.is_highest = false;
-  g_status.color_scheme = CS_RANDOM;
+  g_status.color_scheme = CS_DEFAULT;
   g_status.error_vector = 0;
 
   /* Init ISR */
@@ -64,7 +64,7 @@ void loop() {
   }
 
   /* Handle button presses */
-  if(g_buttonPressed) {
+  if(g_buttonPressed || comms.checkColorScheme()) {
     button_press_ts = millis();
     battery_read_ts = min(0, button_press_ts + COLOR_CHANGE_SCREEN_MS 
                              - VOLTAGE_READ_PERIOD * MS_PER_SEC);

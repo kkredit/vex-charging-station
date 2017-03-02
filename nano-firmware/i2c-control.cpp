@@ -37,6 +37,7 @@ void I2c_Controller::init(Station_Status_t *pStatus) {
     Wire.onReceive(receiveHandler);
     g_highest = false;
   }
+  g_color_scheme = CS_DEFAULT;
 }
 
 bool I2c_Controller::getUpdate() {
@@ -83,7 +84,20 @@ bool I2c_Controller::getUpdate() {
   return g_highest;
 }
 
+bool I2c_Controller::checkColorScheme() {
+  return (m_pStatus->color_scheme != g_color_scheme);
+}
+
 void I2c_Controller::updateColorScheme() {
+  if(0 == m_address) {
+    /* If master, tell others what the new color is */
+    for(uint8_t i = 1; i <= MAX_NUM_SLAVES; i++) {
+      Wire.beginTransmission(i);
+      Wire.write(CMC_NEW_COLOR_SCHEME);
+      Wire.write(m_pStatus->color_scheme);
+      Wire.endTransmission();
+    }
+  }
 }
 
 static void requestHandler() {
