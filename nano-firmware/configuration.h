@@ -95,7 +95,7 @@ typedef struct {
 } cs_entry_t;
 
 static const cs_entry_t cs_registry[] = {
-  {CS_RANDOM,     "Random",     rgb_black,        rgb_black,      rgb_black     },
+  {CS_RANDOM,     "Random",     rgb_white,        rgb_white,      rgb_white     },
   {CS_GRCS,       "GRCS",       rgb_grcs_navy,    rgb_grcs_baby,  rgb_grcs_white},
   {CS_UM,         "U of M",     rgb_um_blue,      rgb_um_maize,   rgb_um_white  },
   {CS_MSU,        "MSU",        rgb_msu_green,    rgb_msu_white,  rgb_msu_white },
@@ -147,6 +147,7 @@ static const cs_entry_t cs_registry[] = {
 #define COLOR_RAND_MAX_VAL      250   // out of 0-255
 #define COLOR_SCHEM_PCT_GRAN    1     // in percent
 #define COLOR_SCHEM_ODDS_FLIP   100   // avg number updates between changing direction
+#define COLOR_CHANGE_SCREEN_MS  2000  // in milliseconds
 #define BLINKING_PERIOD         500lu // in milliseconds
 #define BLINKING_PERIOD_ERR_ON  50lu  // in milliseconds
 #define BLINKING_PERIOD_ERR_OFF 1950lu // in milliseconds

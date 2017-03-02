@@ -74,14 +74,14 @@ void Lcd_Controller::updateScreen() {
 }
 
 void Lcd_Controller::updateColorScheme() {
-  analogWrite(PIN_LCD_PWM_R, 255 - m_colorScheme[0].r);
-  analogWrite(PIN_LCD_PWM_G, 255 - m_colorScheme[0].b);
-  analogWrite(PIN_LCD_PWM_B, 255 - m_colorScheme[0].b);
-  m_lcd->clear();
-  m_lcd->write(cs_registry[m_pStatus->color_scheme].name);
   m_colorScheme[0] = cs_registry[m_pStatus->color_scheme].primary;
   m_colorScheme[1] = cs_registry[m_pStatus->color_scheme].secondary;
   m_colorScheme[2] = cs_registry[m_pStatus->color_scheme].tertiary;
+  analogWrite(PIN_LCD_PWM_R, 255 - m_colorScheme[0].r);
+  analogWrite(PIN_LCD_PWM_G, 255 - m_colorScheme[0].g);
+  analogWrite(PIN_LCD_PWM_B, 255 - m_colorScheme[0].b);
+  m_lcd->clear();
+  m_lcd->write(cs_registry[m_pStatus->color_scheme].name);
 }
 
 void Lcd_Controller::checkScroll() {

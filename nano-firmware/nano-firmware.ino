@@ -49,9 +49,11 @@ void setup() {
 void loop() {
   /* Statics declarations */
   static unsigned long battery_read_ts = 0;
+  static unsigned long button_press_ts = 0;
 
   /* Get new voltage readings every VOLTAGE_READ_PERIOD seconds */
-  if(battery_read_ts + VOLTAGE_READ_PERIOD * MS_PER_SEC < millis()) {
+  if(battery_read_ts + VOLTAGE_READ_PERIOD * MS_PER_SEC < millis()
+     && button_press_ts + COLOR_CHANGE_SCREEN_MS < millis()) {
     battery_read_ts = millis();
     g_status.current = battery.readCurrentDraw();
     g_status.voltage = battery.readBatteryVoltage();
@@ -63,6 +65,9 @@ void loop() {
 
   /* Handle button presses */
   if(g_buttonPressed) {
+    button_press_ts = millis();
+    battery_read_ts = min(0, button_press_ts + COLOR_CHANGE_SCREEN_MS 
+                             - VOLTAGE_READ_PERIOD * MS_PER_SEC);
     g_buttonPressed = false;
     g_status.color_scheme++;
     g_status.color_scheme %= NUMBER_OF_CS;
@@ -72,8 +77,10 @@ void loop() {
 
   /* Monitor LED blink, LCD color updates */
   leds.checkBlink();
-  lcd.checkScroll();
-  lcd.checkColor();
+  if(button_press_ts + COLOR_CHANGE_SCREEN_MS < millis()) {
+    lcd.checkScroll();
+    lcd.checkColor();
+  }
 }
 
 /* Local functions definitions */
