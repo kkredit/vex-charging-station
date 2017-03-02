@@ -16,6 +16,7 @@ public:
   I2c_Controller() {};
   void init(Station_Status_t *pStatus);
   bool getUpdate();
+  void updateColorScheme();
 
 private:
   Station_Status_t *m_pStatus;

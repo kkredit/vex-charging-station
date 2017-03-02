@@ -14,6 +14,10 @@
 /* Local functions declarations */
 void checkErrors();
 
+/* ISR declarations */
+static volatile bool g_buttonPressed;
+static void buttonPressIsr();
+
 /* Global variables */
 Battery_Controller battery;
 I2c_Controller comms;
@@ -26,7 +30,14 @@ void setup() {
   g_status.voltage = 0;
   g_status.current = 0;
   g_status.is_highest = false;
+  g_status.color_scheme = CS_RANDOM;
   g_status.error_vector = 0;
+
+  /* Init ISR */
+  g_buttonPressed = false;
+  INIT_INPUT_PULLUP(PIN_LCD_BUTTON);
+  attachInterrupt(digitalPinToInterrupt(PIN_LCD_BUTTON), 
+                  buttonPressIsr, FALLING);
 
   /* Init control objects */
   battery.init(&g_status);
@@ -50,6 +61,15 @@ void loop() {
     leds.updateColors();
   }
 
+  /* Handle button presses */
+  if(g_buttonPressed) {
+    g_buttonPressed = false;
+    g_status.color_scheme++;
+    g_status.color_scheme %= NUMBER_OF_CS;
+    lcd.updateColorScheme();
+    comms.updateColorScheme();
+  }
+
   /* Monitor LED blink, LCD color updates */
   leds.checkBlink();
   lcd.checkScroll();
@@ -65,5 +85,9 @@ void checkErrors() {
   else {
     g_status.error_vector &= ~ERR_CHARGER_VOLTAGE;
   }
+}
+
+void buttonPressIsr() {
+  g_buttonPressed = true;
 }
 

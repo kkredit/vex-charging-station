@@ -32,6 +32,9 @@ void Lcd_Controller::init(Station_Status_t *pStatus) {
   m_lcd->leftToRight();
   m_lcd->print("Initializing");
 
+  m_colorScheme[0] = cs_registry[m_pStatus->color_scheme].primary;
+  m_colorScheme[1] = cs_registry[m_pStatus->color_scheme].secondary;
+  m_colorScheme[2] = cs_registry[m_pStatus->color_scheme].tertiary;
   memset(m_bottomLine, 0, sizeof(m_bottomLine));
   m_bottomLineIndex = 0;
   m_bottomLineLen = 1;
@@ -39,7 +42,6 @@ void Lcd_Controller::init(Station_Status_t *pStatus) {
 
 void Lcd_Controller::updateScreen() {
   m_lcd->clear();
-  m_lcd->setCursor(0, 0);
   m_lcd->print("Voltage: ");
   m_lcd->print(getVoltageStr());
   m_lcd->print(" V");
@@ -71,6 +73,28 @@ void Lcd_Controller::updateScreen() {
   m_lcd->print(getBottomLineSubstr());
 }
 
+void Lcd_Controller::updateColorScheme() {
+  analogWrite(PIN_LCD_PWM_R, 255 - m_colorScheme[0].r);
+  analogWrite(PIN_LCD_PWM_G, 255 - m_colorScheme[0].b);
+  analogWrite(PIN_LCD_PWM_B, 255 - m_colorScheme[0].b);
+  m_lcd->clear();
+  m_lcd->write(cs_registry[m_pStatus->color_scheme].name);
+  m_colorScheme[0] = cs_registry[m_pStatus->color_scheme].primary;
+  m_colorScheme[1] = cs_registry[m_pStatus->color_scheme].secondary;
+  m_colorScheme[2] = cs_registry[m_pStatus->color_scheme].tertiary;
+}
+
+void Lcd_Controller::checkScroll() {
+  static unsigned long scroll_ts = 0;
+  if(scroll_ts + LCD_SCROLL_LATENCY_MS <= millis()
+     && !m_pStatus->error_vector) {
+    scroll_ts = millis();
+    m_bottomLineIndex++;
+    m_lcd->setCursor(0, 1);
+    m_lcd->print(getBottomLineSubstr());
+  }
+}
+
 void Lcd_Controller::checkColor() {
   static unsigned long color_ts = 0;
   static const unsigned pin_color[] = 
@@ -89,60 +113,49 @@ void Lcd_Controller::checkColor() {
     color_ts = millis();
     errorSet = false;
 
-#if !defined(RANDOM_COLORS) && defined(COLOR_1) && defined(COLOR_2) && defined(COLOR_3)
-    /* Intentional color scheme */
-    static const rgb_t scheme[] = {COLOR_1, COLOR_2, COLOR_3};
-    static uint8_t cur_color = 1;
-    static uint8_t cur_target = 0;
-    static int16_t cur_pos = 100; // percent of way to target
-    if(0 == random(0, COLOR_SCHEM_ODDS_FLIP)) {
-      uint8_t temp = cur_target;
-      cur_target = cur_color;
-      cur_color = temp;
-      cur_pos = 100 - cur_pos;
-    }
-    cur_pos = min(100, cur_pos + random(1, 1 + 2 * COLOR_SCHEM_PCT_GRAN));
-    /* Green has inherent advantage on the LCD, so remap R and B to 51 - 255 */
-    for(uint8_t i = 0; i < 3; i++){
-      int16_t val = 255 - ((100 - cur_pos) * ((int16_t *)&(scheme[cur_color]))[i] 
-                           + cur_pos * ((int16_t *)&(scheme[cur_target]))[i]) / 100;
-      val = min(255, val);
-      val = max(0, val);
-      analogWrite(pin_color[i], val);
-    }
-    if(100 == cur_pos) {
-      cur_color = cur_target;
-      cur_pos = 0;
-      while(cur_color == cur_target){
-        cur_target = random(0, 3);
+    if(CS_RANDOM != m_pStatus->color_scheme) {
+      /* Intentional color scheme */
+      static uint8_t cur_color = 1;
+      static uint8_t cur_target = 0;
+      static int16_t cur_pos = 100; // percent of way to target
+      if(0 == random(0, COLOR_SCHEM_ODDS_FLIP)) {
+        uint8_t temp = cur_target;
+        cur_target = cur_color;
+        cur_color = temp;
+        cur_pos = 100 - cur_pos;
+      }
+      cur_pos = min(100, cur_pos + random(1, 1 + 2 * COLOR_SCHEM_PCT_GRAN));
+      /* Green has inherent advantage on the LCD, so remap R and B to 51 - 255 */
+      for(uint8_t i = 0; i < 3; i++){
+        int16_t val = 255 - ((100 - cur_pos) * ((int16_t *)&(m_colorScheme[cur_color]))[i] 
+                             + cur_pos * ((int16_t *)&(m_colorScheme[cur_target]))[i]) / 100;
+        val = min(255, val);
+        val = max(0, val);
+        analogWrite(pin_color[i], val);
+      }
+      if(100 == cur_pos) {
+        cur_color = cur_target;
+        cur_pos = 0;
+        while(cur_color == cur_target){
+          cur_target = random(0, 3);
+        }
       }
     }
-#else
-    /* Random colors */
-    static int pwm_color[] = {175, 150, 125};
-    static bool dir_color[] = {true, true, true};
-    unsigned i = random(0, 3);
-    pwm_color[i] += (dir_color[i] ? COLOR_CHANGE_GRAN : -COLOR_CHANGE_GRAN);
-    pwm_color[i] += random(-COLOR_CHANGE_GRAN, COLOR_CHANGE_GRAN + 1);
-    analogWrite(pin_color[i], pwm_color[i]);
-    if(COLOR_MIN_VAL >= pwm_color[i]) {
-      dir_color[i] = true;
+    else {
+      /* Random colors */
+      static int pwm_color[] = {175, 150, 125};
+      static bool dir_color[] = {true, true, true};
+      unsigned i = random(0, 3);
+      pwm_color[i] += (dir_color[i] ? COLOR_RAND_CHANGE_GRAN : -COLOR_RAND_CHANGE_GRAN);
+      pwm_color[i] += random(-COLOR_RAND_CHANGE_GRAN, COLOR_RAND_CHANGE_GRAN + 1);
+      analogWrite(pin_color[i], pwm_color[i]);
+      if(COLOR_RAND_MIN_VAL >= pwm_color[i]) {
+        dir_color[i] = true;
+      }
+      else if(COLOR_RAND_MAX_VAL <= pwm_color[i]) {
+        dir_color[i] = false;
+      }
     }
-    else if(COLOR_MAX_VAL <= pwm_color[i]) {
-      dir_color[i] = false;
-    }
-#endif
-  }
-}
-
-void Lcd_Controller::checkScroll() {
-  static unsigned long scroll_ts = 0;
-  if(scroll_ts + LCD_SCROLL_LATENCY_MS <= millis()
-     && !m_pStatus->error_vector) {
-    scroll_ts = millis();
-    m_bottomLineIndex++;
-    m_lcd->setCursor(0, 1);
-    m_lcd->print(getBottomLineSubstr());
   }
 }
 

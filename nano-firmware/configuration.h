@@ -11,11 +11,18 @@
 
 /* Typedefs */
 typedef struct {
-  uint16_t voltage;
-  uint16_t current;
-  bool is_highest;
-  uint8_t  error_vector;
+  uint16_t  voltage;
+  uint16_t  current;
+  bool      is_highest;
+  uint8_t   color_scheme;
+  uint8_t   error_vector;
 } Station_Status_t;
+
+typedef enum {
+  CMC_HIGHEST_VOLTAGE = 0,
+  CMC_NOT_HIGHEST_VOLTAGE,
+  CMC_NEW_COLOR_SCHEME,
+} comms_msg_code_t;
 
 // Note: color is uint8_t, but use math that requires int16_t
 typedef struct {
@@ -24,55 +31,78 @@ typedef struct {
   int16_t b;
 } rgb_t;
 
-typedef enum {
-  CMC_HIGHEST_VOLTAGE = 0,
-  CMC_NOT_HIGHEST_VOLTAGE,
-} comms_msg_code_t;
-
-/* Color settings */
-//#define RANDOM_COLORS // Comment out this line and re-upload for intentional colors
-#define COLOR_1 rgb_msu_green
-#define COLOR_2 rgb_msu_white
-#define COLOR_3 rgb_msu_bright
-
 /* Generic colors according to 
  * http://www.rapidtables.com/web/color/RGB_Color.htm */
-const rgb_t rgb_black   = {0  , 0  , 0  };
-const rgb_t rgb_white   = {255, 255, 255};
-const rgb_t rgb_red     = {255, 0  , 0  };
-const rgb_t rgb_lime    = {0  , 255, 0  };
-const rgb_t rgb_blue    = {0  , 0  , 255};
-const rgb_t rgb_yellow  = {255, 255, 0  };
-const rgb_t rgb_cyan    = {0  , 255, 255};
-const rgb_t rgb_magenta = {255, 0  , 255};
-const rgb_t rgb_silver  = {192, 192, 192};
-const rgb_t rgb_gray    = {128, 128, 128};
-const rgb_t rgb_maroon  = {128, 0  , 0  };
-const rgb_t rgb_olive   = {128, 128, 0  };
-const rgb_t rgb_green   = {0  , 128, 0  };
-const rgb_t rgb_purple  = {128, 0  , 128};
-const rgb_t rgb_teal    = {0  , 128, 128};
-const rgb_t rgb_navy    = {0  , 0  , 128};
+#define rgb_black         {0  , 0  , 0  }
+#define rgb_white         {255, 255, 255}
+#define rgb_red           {255, 0  , 0  }
+#define rgb_lime          {0  , 255, 0  }
+#define rgb_blue          {0  , 0  , 255}
+#define rgb_yellow        {255, 255, 0  }
+#define rgb_cyan          {0  , 255, 255}
+#define rgb_magenta       {255, 0  , 255}
+#define rgb_silver        {192, 192, 192}
+#define rgb_gray          {128, 128, 128}
+#define rgb_maroon        {128, 0  , 0  }
+#define rgb_olive         {128, 128, 0  }
+#define rgb_green         {0  , 128, 0  }
+#define rgb_purple        {128, 0  , 128}
+#define rgb_teal          {0  , 128, 128}
+#define rgb_navy          {0  , 0  , 128}
 /* GRCS */
-const rgb_t rgb_grcs_navy  = {0  , 46 , 72 };
-const rgb_t rgb_grcs_baby  = {113, 180, 225};
-const rgb_t rgb_grcs_white = rgb_white;
+#define rgb_grcs_navy     {0  , 46 , 72 }
+#define rgb_grcs_baby     {113, 180, 225}
+#define rgb_grcs_white    rgb_white
 /* University of Michigan */
-const rgb_t rgb_um_blue  = {0  , 45 , 98 };
-const rgb_t rgb_um_maize = {255, 165, 30 };
-const rgb_t rgb_um_white = rgb_white;
+#define rgb_um_blue       {0  , 45 , 98 }
+#define rgb_um_maize      {255, 165, 30 }
+#define rgb_um_white      rgb_white
 /* Michigan State University */
-const rgb_t rgb_msu_green  = {4  , 30 , 4  };
-const rgb_t rgb_msu_white  = rgb_gray;
-const rgb_t rgb_msu_bright = {20 , 150, 20 };
+#define rgb_msu_green     {4  , 30 , 4  }
+#define rgb_msu_white     rgb_gray
+#define rgb_msu_bright    {20 , 150, 20 }
 /* Christmas */
-const rgb_t rgb_chrs_red   = rgb_red;
-const rgb_t rgb_chrs_green = {0  , 255, 0  };
-const rgb_t rgb_chrs_white = rgb_white;
+#define rgb_chrs_red      rgb_red
+#define rgb_chrs_green    {0  , 255, 0  }
+#define rgb_chrs_white    rgb_white
 /* Halloween */
-const rgb_t rgb_hllw_orange = {255, 64 , 0  };
-const rgb_t rgb_hllw_black  = rgb_black;
-const rgb_t rgb_hllw_white  = rgb_white;
+#define rgb_hllw_orange   {255, 64 , 0  }
+#define rgb_hllw_black    rgb_black
+#define rgb_hllw_white    rgb_white
+/* Patriotic */
+#define rgb_pat_red       rgb_red
+#define rgb_pat_white     rgb_white
+#define rgb_pat_blue      rgb_blue
+
+typedef enum {
+  CS_RANDOM = 0,
+  CS_GRCS,
+  CS_UM,
+  CS_MSU,
+  CS_CHRISTMAS,
+  CS_HALLOWEEN,
+  CS_PATRIOTIC,
+  /* Do no modify below this line */
+  NUMBER_OF_CS,
+} color_scheme_t;
+
+typedef struct {
+  color_scheme_t  cs;
+  char            *name;
+  rgb_t           primary;
+  rgb_t           secondary;
+  rgb_t           tertiary;
+} cs_entry_t;
+
+static const cs_entry_t cs_registry[] = {
+  {CS_RANDOM,     "Random",     rgb_black,        rgb_black,      rgb_black     },
+  {CS_GRCS,       "GRCS",       rgb_grcs_navy,    rgb_grcs_baby,  rgb_grcs_white},
+  {CS_UM,         "U of M",     rgb_um_blue,      rgb_um_maize,   rgb_um_white  },
+  {CS_MSU,        "MSU",        rgb_msu_green,    rgb_msu_white,  rgb_msu_white },
+  {CS_CHRISTMAS,  "Christmas",  rgb_chrs_red,     rgb_chrs_green, rgb_chrs_white},
+  {CS_HALLOWEEN,  "Halloween",  rgb_hllw_orange,  rgb_hllw_black, rgb_hllw_white},
+  {CS_PATRIOTIC,  "Patriotic",  rgb_pat_red,      rgb_pat_white,  rgb_pat_blue  },
+};
 
 /* Utility macros */
 #define INIT_INPUT_PULLUP(pin)  pinMode(pin, INPUT);  digitalWrite(pin, HIGH)
@@ -85,29 +115,29 @@ const rgb_t rgb_hllw_white  = rgb_white;
 #define MS_PER_SEC  1000lu
 
 /* Pins */
-#define PIN_I2C_SDA         A4
-#define PIN_I2C_SCL         A5
+#define PIN_LCD_BUTTON      2
+#define PIN_LCD_TEXT_RS     3
+#define PIN_LCD_TEXT_ENABLE 4
+#define PIN_LCD_TEXT_D4     5
+#define PIN_LCD_TEXT_D5     6
+#define PIN_LCD_TEXT_D6     7
+#define PIN_LCD_TEXT_D7     8
+#define PIN_LCD_PWM_R       9
+#define PIN_LCD_PWM_G       10
+#define PIN_LCD_PWM_B       11
+
+#define PIN_LED_RED         12
+#define PIN_LED_GRN         13
 
 #define PIN_ADDR_0          A0
 #define PIN_ADDR_1          A1
 #define PIN_ADDR_2          A2
 
-#define PIN_LCD_PWM_R       9
-#define PIN_LCD_PWM_G       10
-#define PIN_LCD_PWM_B       11
-
-#define PIN_LED_RED         8
-#define PIN_LED_GRN         12
+#define PIN_I2C_SDA         A4
+#define PIN_I2C_SCL         A5
 
 #define PIN_CURRENT_DRAW    A6
 #define PIN_VOLTAGE_BATTERY A7
-
-#define PIN_LCD_TEXT_RS     2
-#define PIN_LCD_TEXT_ENABLE 3
-#define PIN_LCD_TEXT_D4     4
-#define PIN_LCD_TEXT_D5     5
-#define PIN_LCD_TEXT_D6     6
-#define PIN_LCD_TEXT_D7     7
 
 /* Settings */
 #define VOLTAGE_READ_PERIOD     5lu   // in seconds

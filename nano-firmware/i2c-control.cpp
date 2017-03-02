@@ -10,6 +10,7 @@
 /* Globals declarations, for use in interrupt handlers */
 extern Station_Status_t g_status;
 static volatile bool g_highest;
+static volatile uint8_t g_color_scheme;
 
 /* Function declarations */
 static void requestHandler();
@@ -82,6 +83,9 @@ bool I2c_Controller::getUpdate() {
   return g_highest;
 }
 
+void I2c_Controller::updateColorScheme() {
+}
+
 static void requestHandler() {
   Wire.write(g_status.voltage);
 }
@@ -95,6 +99,8 @@ static void receiveHandler(int num_bytes) {
       case CMC_NOT_HIGHEST_VOLTAGE:
         g_highest = false;
         break;
+      case CMC_NEW_COLOR_SCHEME:
+        g_color_scheme = Wire.read();
       default:
         break;
     }
