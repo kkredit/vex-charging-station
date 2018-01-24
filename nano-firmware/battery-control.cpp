@@ -1,6 +1,6 @@
 /*
  * @file battery-control.cpp
- * 
+ *
  * @brief Battery and charger circuit control implementation file
  */
 
@@ -10,6 +10,7 @@
 /* Function definitions */
 void Battery_Controller::init(Station_Status_t *pStatus) {
   m_pStatus = pStatus;
+  analogReference(EXTERNAL);
   pinMode(PIN_VOLTAGE_BATTERY, INPUT);
   pinMode(PIN_CURRENT_DRAW, INPUT);
 }
@@ -21,4 +22,3 @@ uint16_t Battery_Controller::readBatteryVoltage() {
 uint16_t Battery_Controller::readCurrentDraw() {
   return analogRead(PIN_CURRENT_DRAW);
 }
-

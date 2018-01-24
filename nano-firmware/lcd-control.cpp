@@ -5,10 +5,10 @@
  */
 
 #include "lcd-control.h"
+#include "color_schemes.h"
 #include <Arduino.h>
 #include <string.h>
 
-#define ONE_VOLT 56
 #define MICROAMPS_PER_ADC 2000lu
 #define MICROA_PER_MILLIA 1000lu
 
@@ -74,6 +74,8 @@ void Lcd_Controller::updateScreen() {
 }
 
 void Lcd_Controller::updateColorScheme() {
+  m_pStatus->color_scheme++;
+  m_pStatus->color_scheme %= NUMBER_OF_CS;
   m_colorScheme[0] = cs_registry[m_pStatus->color_scheme].primary;
   m_colorScheme[1] = cs_registry[m_pStatus->color_scheme].secondary;
   m_colorScheme[2] = cs_registry[m_pStatus->color_scheme].tertiary;

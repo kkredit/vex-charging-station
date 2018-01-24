@@ -17,6 +17,13 @@ static void requestHandler();
 static void receiveHandler(int num_bytes);
 
 /* Function definitions */
+I2c_Controller::I2c_Controller() {
+  m_pStatus = NULL;
+  m_address = 0;
+  m_initialized = false;
+  g_highest = false;
+}
+
 void I2c_Controller::init(Station_Status_t *pStatus) {
   m_pStatus = pStatus;
   INIT_INPUT_PULLUP(PIN_ADDR_0);
@@ -37,71 +44,90 @@ void I2c_Controller::init(Station_Status_t *pStatus) {
     Wire.onReceive(receiveHandler);
     g_highest = false;
   }
-  g_color_scheme = CS_DEFAULT;
+  g_color_scheme = g_status.color_scheme;
+  m_initialized = true;
 }
 
 bool I2c_Controller::getUpdate() {
-  if(0 == m_address) {
-    /* If master, get voltages from others, tell the highest voltage 
-     * that it is highest */
-    static uint8_t reigning_highest_controller = 0;
-    uint16_t current_highest_voltage = m_pStatus->voltage;
-    uint8_t current_highest_controller = 0;
-    uint16_t this_voltage;
-    for(uint8_t i = 1; i <= MAX_NUM_SLAVES; i++) {
-      Wire.beginTransmission(i);
-      if(Wire.endTransmission() == 0) {
-        if(2 == Wire.requestFrom(i, 2u)) {
-          this_voltage = Wire.read() * 256 + Wire.read();
-          if(this_voltage > current_highest_voltage) {
-            current_highest_voltage = this_voltage;
-            current_highest_controller = i;
+  bool retval = true;
+  if(m_initialized) {
+    if(0 == m_address) {
+      /* If master, get voltages from others, tell the highest voltage 
+       * that it is highest */
+      static uint8_t reigning_highest_controller = 0;
+      uint16_t current_highest_voltage = m_pStatus->voltage;
+      uint8_t current_highest_controller = 0;
+      uint16_t this_voltage;
+      for(uint8_t i = 1; i <= MAX_NUM_SLAVES; i++) {
+        Wire.beginTransmission(i);
+        if(Wire.endTransmission() == 0) {
+          Serial.print("Connected to I2C slave ");
+          Serial.print(i);
+          Serial.print("\n");
+          if(2 == Wire.requestFrom(i, 2u)) {
+            this_voltage = Wire.read() + (256 * Wire.read());
+            Serial.print("Slave ");
+            Serial.print(i);
+            Serial.print(" voltage is ");
+            Serial.print(this_voltage);
+            Serial.print("\n");
+            if(this_voltage > current_highest_voltage) {
+              current_highest_voltage = this_voltage;
+              current_highest_controller = i;
+            }
           }
         }
       }
+  
+      if(current_highest_controller != reigning_highest_controller) {
+        if(0 == reigning_highest_controller) {
+          g_highest = false;
+        }
+        else {
+          Wire.beginTransmission(reigning_highest_controller);
+          Wire.write(CMC_NOT_HIGHEST_VOLTAGE);
+          Wire.endTransmission();
+        }
+  
+        if(0 == current_highest_controller) {
+          g_highest = true;
+        }
+        else {
+          Wire.beginTransmission(current_highest_controller);
+          Wire.write(CMC_HIGHEST_VOLTAGE);
+          Wire.endTransmission();
+        }
+      }
     }
-
-    if(current_highest_controller != reigning_highest_controller) {
-      if(0 == reigning_highest_controller) {
-        g_highest = false;
-      }
-      else {
-        Wire.beginTransmission(reigning_highest_controller);
-        Wire.write(CMC_NOT_HIGHEST_VOLTAGE);
-        Wire.endTransmission();
-      }
-
-      if(0 == current_highest_controller) {
-        g_highest = true;
-      }
-      else {
-        Wire.beginTransmission(reigning_highest_controller);
-        Wire.write(CMC_HIGHEST_VOLTAGE);
-        Wire.endTransmission();
-      }
-    }
+    retval = g_highest;
   }
-  return g_highest;
+  return retval;
 }
 
 bool I2c_Controller::checkColorScheme() {
-  return (m_pStatus->color_scheme != g_color_scheme);
+  bool retval = false;
+  if(m_initialized) {
+    return (m_pStatus->color_scheme != g_color_scheme);
+  }
+  return retval;
 }
 
 void I2c_Controller::updateColorScheme() {
-  if(0 == m_address) {
-    /* If master, tell others what the new color is */
-    for(uint8_t i = 1; i <= MAX_NUM_SLAVES; i++) {
-      Wire.beginTransmission(i);
-      Wire.write(CMC_NEW_COLOR_SCHEME);
-      Wire.write(m_pStatus->color_scheme);
-      Wire.endTransmission();
+  if(m_initialized) {
+    if(0 == m_address) {
+      /* If master, tell others what the new color is */
+      for(uint8_t i = 1; i <= MAX_NUM_SLAVES; i++) {
+        Wire.beginTransmission(i);
+        Wire.write(CMC_NEW_COLOR_SCHEME);
+        Wire.write(m_pStatus->color_scheme);
+        Wire.endTransmission();
+      }
     }
   }
 }
 
 static void requestHandler() {
-  Wire.write(g_status.voltage);
+  Wire.write((uint8_t *)&g_status.voltage, 2);
 }
 
 static void receiveHandler(int num_bytes) {

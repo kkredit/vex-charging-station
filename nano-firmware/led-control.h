@@ -28,6 +28,8 @@ private:
   void setRed();
   void setGrn();
   void setBlinking(bool setval);
+  void setRedPin(bool setval);
+  void setGrnPin(bool setval);
 };
 
 #endif

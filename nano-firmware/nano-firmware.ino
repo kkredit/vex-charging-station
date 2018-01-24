@@ -20,9 +20,9 @@ static void buttonPressIsr();
 
 /* Global variables */
 Battery_Controller battery;
+Lcd_Controller lcd;
 I2c_Controller comms;
 Led_Controller leds;
-Lcd_Controller lcd;
 Station_Status_t g_status;
 
 void setup() {
@@ -30,7 +30,7 @@ void setup() {
   g_status.voltage = 0;
   g_status.current = 0;
   g_status.is_highest = false;
-  g_status.color_scheme = CS_DEFAULT;
+  g_status.color_scheme = COLOR_SCHEME_DEFAULT;
   g_status.error_vector = 0;
 
   /* Init ISR */
@@ -41,9 +41,11 @@ void setup() {
 
   /* Init control objects */
   battery.init(&g_status);
+  lcd.init(&g_status);
   comms.init(&g_status);
   leds.init(&g_status);
-  lcd.init(&g_status);
+
+  Serial.begin(115200);
 }
 
 void loop() {
@@ -61,6 +63,12 @@ void loop() {
     g_status.is_highest = comms.getUpdate();
     lcd.updateScreen();
     leds.updateColors();
+
+    Serial.print("Read Voltage A2D: ");
+    Serial.print(g_status.voltage);
+    Serial.print(" Current A2D: ");
+    Serial.println(g_status.current);
+    Serial.println("");
   }
 
   /* Handle button presses */
@@ -69,8 +77,6 @@ void loop() {
     battery_read_ts = min(0, button_press_ts + COLOR_CHANGE_SCREEN_MS 
                              - VOLTAGE_READ_PERIOD * MS_PER_SEC);
     g_buttonPressed = false;
-    g_status.color_scheme++;
-    g_status.color_scheme %= NUMBER_OF_CS;
     lcd.updateColorScheme();
     comms.updateColorScheme();
   }

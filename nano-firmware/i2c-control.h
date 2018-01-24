@@ -13,7 +13,7 @@
 class I2c_Controller
 {
 public:
-  I2c_Controller() {};
+  I2c_Controller();
   void init(Station_Status_t *pStatus);
   bool getUpdate();
   bool checkColorScheme();
@@ -22,6 +22,7 @@ public:
 private:
   Station_Status_t *m_pStatus;
   int m_address;
+  bool m_initialized;
 };
 
 #endif
